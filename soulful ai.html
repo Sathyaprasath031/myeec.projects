@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindease</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for vector-based icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Firebase for potential future extensions (e.g., user authentication, data storage) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // Expose Firebase objects to the global window object for use in the main script
+        window.firebase = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken };
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .neumorphic-card {
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+        }
+        .dark .neumorphic-card {
+            box-shadow: 20px 20px 60px #1e1e1e, -20px -20px 60px #2e2e2e;
+            border: 1px solid rgba(0, 0, 0, 0.4);
+        }
+        .neumorphic-inset {
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+        }
+        .dark .neumorphic-inset {
+            box-shadow: inset 5px 5px 10px #1e1e1e, inset -5px -5px 10px #2e2e2e;
+        }
+        .neumorphic-button {
+            box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+        }
+        .neumorphic-button:hover {
+            background-color: #f0f0f0;
+        }
+        .dark .neumorphic-button {
+            box-shadow: 5px 5px 10px #1e1e1e, -5px -5px 10px #2e2e2e;
+        }
+        .dark .neumorphic-button:hover {
+            background-color: #3e3e3e;
+        }
+        .neumorphic-button:active {
+            box-shadow: inset 3px 3px 6px #bebebe, inset -3px -3px 6px #ffffff;
+        }
+        .dark .neumorphic-button:active {
+            box-shadow: inset 3px 3px 6px #1e1e1e, inset -3px -3px 6px #2e2e2e;
+        }
+        .neumorphic-input {
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+        }
+        .dark .neumorphic-input {
+            box-shadow: inset 5px 5px 10px #1e1e1e, inset -5px -5px 10px #2e2e2e;
+        }
+        .neumorphic-user {
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1), -5px -5px 10px rgba(0, 0, 0, 0.2);
+        }
+        .neumorphic-ai {
+            box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+        }
+        .dark .neumorphic-ai {
+            box-shadow: 5px 5px 10px #1e1e1e, -5px -5px 10px #2e2e2e;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-track {
+            background: #2e2e2e;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c5c5c5;
+            border-radius: 10px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4 text-gray-800 dark:text-gray-100">
+    <div class="w-full max-w-2xl bg-gray-200 dark:bg-gray-800 rounded-3xl shadow-xl flex flex-col neumorphic-card">
+        <!-- Header -->
+        <div class="p-6 rounded-t-3xl neumorphic-inset flex items-center justify-between">
+            <h1 class="text-2xl font-bold flex items-center gap-2">
+                <div class="neumorphic-button p-2 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain text-blue-500"><path d="M12 5a3 3 0 1 0-2.3 5.4l.6.6a1.5 1.5 0 0 0 2.1 0l.6-.6A3 3 0 1 0 12 5Z"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M12 5v2"/><path d="M12 17v2"/><path d="M17.4 17.4l-.8-.8A1.5 1.5 0 0 1 15 15.6l-1.4 1.4"/><path d="M6.6 6.6l.8.8a1.5 1.5 0 0 1 0 2.1l-.8.8"/><path d="M17.4 6.6l-.8.8a1.5 1.5 0 0 0 0 2.1l.8.8"/><path d="M6.6 17.4l.8-.8a1.5 1.5 0 0 0 0-2.1l-.8-.8"/></svg>
+                </div>
+                <span>Mindease</span>
+            </h1>
+            <button id="voice-toggle" class="p-3 rounded-full neumorphic-button text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-x"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>
+            </button>
+        </div>
+
+        <!-- Chat History -->
+        <div id="chat-history" class="flex-1 p-6 overflow-y-auto space-y-4 h-96 custom-scrollbar">
+            <div class="text-center text-gray-500 dark:text-gray-400 mt-20">
+                <p>Hello! I'm Mindease, here to support you. What's on your mind?</p>
+                <p class="mt-2 text-sm">I'm here to offer support and companionship on your wellness journey. For professional medical advice, it's always best to consult a licensed expert.</p>
+                <p class="mt-4 text-xs text-gray-400">To generate an image, type a description and click the image icon.</p>
+            </div>
+        </div>
+
+        <!-- User Input Form -->
+        <div class="p-6 rounded-b-3xl neumorphic-inset flex items-center gap-4">
+            <input type="text" id="user-input" class="flex-1 p-4 rounded-full border-none focus:outline-none bg-gray-100 dark:bg-gray-900 neumorphic-input" placeholder="Type your message..." />
+            <button id="image-button" class="p-4 rounded-full neumorphic-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image text-gray-500 hover:text-purple-500"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            </button>
+            <button id="send-button" class="p-4 rounded-full neumorphic-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send text-gray-500 hover:text-blue-500"><path d="m22 2-7 20-4-9-9-4 20-7z"/><path d="M22 2 11 13"/></svg>
+            </button>
+        </div>
+    </div>
+    <!-- Modal for alerts -->
+    <div id="alert-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4">
+      <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-xl neumorphic-card max-w-sm">
+        <p id="alert-message" class="text-center text-gray-800 dark:text-gray-100"></p>
+        <button onclick="document.getElementById('alert-modal').classList.add('hidden')" class="mt-6 w-full p-3 rounded-full neumorphic-button text-gray-800 dark:text-gray-100">
+          OK
+        </button>
+      </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check for Firebase variables from the host environment
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+            const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+            let userId = '';
+            let isVoiceMode = false;
+
+            let auth;
+
+            // Helper function for custom alerts
+            const showAlert = (message) => {
+                const modal = document.getElementById('alert-modal');
+                const alertMessage = document.getElementById('alert-message');
+                alertMessage.textContent = message;
+                modal.classList.remove('hidden');
+            };
+
+            // Initialize Firebase and authenticate
+            if (firebaseConfig) {
+                const app = firebase.initializeApp(firebaseConfig);
+                auth = firebase.getAuth(app);
+                try {
+                    if (initialAuthToken) {
+                        await firebase.signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        await firebase.signInAnonymously(auth);
+                    }
+                    userId = auth.currentUser?.uid || crypto.randomUUID();
+                } catch (error) {
+                    console.error("Firebase Auth Error:", error);
+                }
+            }
+
+            const chatHistory = document.getElementById('chat-history');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const imageButton = document.getElementById('image-button');
+            const voiceToggleButton = document.getElementById('voice-toggle');
+            
+            const renderMessage = (sender, text, isImage = false) => {
+                const messageContainer = document.createElement('div');
+                messageContainer.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+                const messageBubble = document.createElement('div');
+                messageBubble.className = `max-w-[70%] p-4 rounded-3xl transition-all duration-300 ${
+                    sender === 'user'
+                        ? 'bg-blue-500 text-white neumorphic-user'
+                        : 'bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-100 neumorphic-ai'
+                }`;
+
+                if (isImage) {
+                    const img = document.createElement('img');
+                    img.src = text;
+                    img.alt = 'Generated Image';
+                    img.className = 'rounded-2xl w-full h-auto';
+                    messageBubble.className = 'max-w-[70%] p-2 rounded-3xl bg-gray-300 dark:bg-gray-700 neumorphic-ai';
+                    messageBubble.appendChild(img);
+                } else {
+                    messageBubble.textContent = text;
+                }
+
+                messageContainer.appendChild(messageBubble);
+                chatHistory.appendChild(messageContainer);
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            };
+
+            const toggleLoading = (state, isImage = false) => {
+                const loadingIndicator = document.getElementById('loading-indicator');
+                if (state) {
+                    if (!loadingIndicator) {
+                        const loaderContainer = document.createElement('div');
+                        loaderContainer.id = 'loading-indicator';
+                        loaderContainer.className = 'flex justify-start';
+                        const loaderBubble = document.createElement('div');
+                        loaderBubble.className = 'max-w-[70%] p-4 rounded-3xl bg-gray-300 dark:bg-gray-700 neumorphic-ai';
+                        loaderBubble.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-2 animate-spin text-gray-500"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
+                        loaderContainer.appendChild(loaderBubble);
+                        chatHistory.appendChild(loaderContainer);
+                        chatHistory.scrollTop = chatHistory.scrollHeight;
+                    }
+                    sendButton.disabled = true;
+                    imageButton.disabled = true;
+                    userInput.disabled = true;
+                } else if (loadingIndicator) {
+                    loadingIndicator.remove();
+                    sendButton.disabled = false;
+                    imageButton.disabled = false;
+                    userInput.disabled = false;
+                }
+            };
+            
+            // Helper function to convert base64 PCM audio to a WAV blob
+            const pcmToWav = (pcmData, sampleRate) => {
+                const dataLength = pcmData.length * 2;
+                const buffer = new ArrayBuffer(44 + dataLength);
+                const view = new DataView(buffer);
+
+                let offset = 0;
+                const writeString = (str) => {
+                    for (let i = 0; i < str.length; i++) { view.setUint8(offset + i, str.charCodeAt(i)); }
+                    offset += str.length;
+                };
+                const writeUint16 = (val) => { view.setUint16(offset, val, true); offset += 2; };
+                const writeUint32 = (val) => { view.setUint32(offset, val, true); offset += 4; };
+
+                // RIFF header
+                writeString('RIFF');
+                writeUint32(36 + dataLength);
+                writeString('WAVE');
+                // fmt chunk
+                writeString('fmt ');
+                writeUint32(16);
+                writeUint16(1); // AudioFormat: 1 for PCM
+                writeUint16(1); // NumChannels: 1
+                writeUint32(sampleRate);
+                writeUint32(sampleRate * 2); // ByteRate
+                writeUint16(2); // BlockAlign
+                writeUint16(16); // BitsPerSample
+                // data chunk
+                writeString('data');
+                writeUint32(dataLength);
+                for (let i = 0; i < pcmData.length; i++) {
+                    view.setInt16(offset, pcmData[i], true);
+                    offset += 2;
+                }
+                return new Blob([view], { type: 'audio/wav' });
+            };
+
+            // Helper function to decode base64 to ArrayBuffer
+            const base64ToArrayBuffer = (base64) => {
+                const binaryString = atob(base64);
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes.buffer;
+            };
+
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            // Function to convert text to speech using AudioContext
+            const speakResponse = async (text) => {
+                try {
+                    let retryCount = 0;
+                    let response;
+                    
+                    const apiKey = "AIzaSyC2akhZjRyNyTjvaptS9XCI_1ieMXWKWgk";
+                    const ttsPayload = {
+                        contents: [{
+                            parts: [{ text: `Say in an empathetic and calm tone: ${text}` }]
+                        }],
+                        generationConfig: {
+                            responseModalities: ["AUDIO"],
+                            speechConfig: {
+                                voiceConfig: {
+                                    prebuiltVoiceConfig: { voiceName: "Autonoe" }
+                                }
+                            }
+                        },
+                        model: "gemini-2.5-flash-preview-tts"
+                    };
+                    
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+                    while (retryCount < 3) {
+                        try {
+                            response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(ttsPayload)
+                            });
+                            if (response.status === 429) {
+                                const delay = Math.pow(2, retryCount) * 1000;
+                                retryCount++;
+                                await new Promise(res => setTimeout(res, delay));
+                                continue;
+                            }
+                            if (!response.ok) {
+                                throw new Error(`TTS API call failed with status: ${response.status}`);
+                            }
+                            break;
+                        } catch (error) {
+                            retryCount++;
+                            if (retryCount >= 3) throw error;
+                            const delay = Math.pow(2, retryCount) * 1000;
+                            await new Promise(res => setTimeout(res, delay));
+                        }
+                    }
+
+                    const result = await response.json();
+                    const audioPart = result?.candidates?.[0]?.content?.parts?.[0];
+                    const audioData = audioPart?.inlineData?.data;
+                    const mimeType = audioPart?.inlineData?.mimeType;
+
+                    if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                        const sampleRateMatch = mimeType.match(/rate=(\d+)/);
+                        const sampleRate = sampleRateMatch ? parseInt(sampleRateMatch[1], 10) : 16000;
+                        
+                        const pcmData = base64ToArrayBuffer(audioData);
+                        const pcm16 = new Int16Array(pcmData);
+                        
+                        const audioBuffer = audioContext.createBuffer(1, pcm16.length, sampleRate);
+                        const nowBuffering = audioBuffer.getChannelData(0);
+                        for (let i = 0; i < pcm16.length; i++) {
+                            nowBuffering[i] = pcm16[i] / 32768; // Normalize 16-bit to float32
+                        }
+
+                        const source = audioContext.createBufferSource();
+                        source.buffer = audioBuffer;
+                        source.connect(audioContext.destination);
+                        source.start();
+                    } else {
+                        console.error("TTS audio data not found or invalid mime type.");
+                    }
+                } catch (error) {
+                    console.error("TTS Error:", error);
+                }
+            };
+            
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            async function sendMessage() {
+                const prompt = userInput.value.trim();
+                if (!prompt) return;
+
+                renderMessage('user', prompt);
+                userInput.value = '';
+                toggleLoading(true);
+
+                try {
+                    let retryCount = 0;
+                    let response;
+                    
+                    const apiKey = "AIzaSyC2akhZjRyNyTjvaptS9XCI_1ieMXWKWgk";
+                    
+                    const mentalHealthKeywords = ['sad', 'anxious', 'stress', 'lonely', 'depressed', 'worried', 'overwhelmed', 'feeling down'];
+                    const isMentalHealthQuery = mentalHealthKeywords.some(keyword => prompt.toLowerCase().includes(keyword));
+
+                    let chatPrompt;
+                    if (isMentalHealthQuery || prompt.length > 50) { // A more flexible check for longer messages
+                        chatPrompt = `You are a supportive, non-medical mental health AI named Mindease. Your goal is to provide general, helpful advice based on psychological principles. Your responses should be concise, thoughtful, and encouraging. If the user's message indicates a severe or urgent situation, you should gently and professionally suggest seeking help from a qualified professional, such as a therapist or psychiatrist. Otherwise, focus on general coping strategies, self-care, and promoting healthy habits. Do not provide medical diagnoses or treatment plans. Maintain an empathetic and professional tone. Respond to the user's message: "${prompt}"`;
+                    } else {
+                        // Respond to general queries with a helpful clarification
+                        chatPrompt = `The user is asking a general question: "${prompt}". Respond with a polite, empathetic message that clarifies Mindease is a mental health companion and is better suited to discuss feelings, stress, and wellness. Do not try to answer the general question directly.`;
+                    }
+                    
+                    const chatPayload = {
+                        contents: [{ role: "user", parts: [{ text: chatPrompt }] }],
+                    };
+                    
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                    while (retryCount < 3) {
+                        try {
+                            response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(chatPayload)
+                            });
+                            if (response.status === 429) {
+                                const delay = Math.pow(2, retryCount) * 1000;
+                                retryCount++;
+                                await new Promise(res => setTimeout(res, delay));
+                                continue;
+                            }
+                            if (!response.ok) {
+                                throw new Error(`API call failed with status: ${response.status}`);
+                            }
+                            break;
+                        } catch (error) {
+                            retryCount++;
+                            if (retryCount >= 3) throw error;
+                            const delay = Math.pow(2, retryCount) * 1000;
+                            await new Promise(res => setTimeout(res, delay));
+                        }
+                    }
+
+                    const result = await response.json();
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        renderMessage('ai', text);
+                        if (isVoiceMode) {
+                            speakResponse(text);
+                        }
+                    } else {
+                        throw new Error("Invalid API response format");
+                    }
+                } catch (error) {
+                    console.error("Chat API Error:", error);
+                    showAlert("Failed to get a response. Please try again.");
+                } finally {
+                    toggleLoading(false);
+                }
+            }
+
+            imageButton.addEventListener('click', async () => {
+                const prompt = userInput.value.trim();
+                if (!prompt) {
+                    showAlert("Please enter a description for the image.");
+                    return;
+                }
+                renderMessage('user', prompt);
+                userInput.value = '';
+                toggleLoading(true, true);
+
+                try {
+                    let retryCount = 0;
+                    let response;
+                    const apiKey = "AIzaSyC2akhZjRyNyTjvaptS9XCI_1ieMXWKWgk";
+                    const payload = { instances: { prompt: prompt }, parameters: { "sampleCount": 1} };
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`;
+
+                    while (retryCount < 3) {
+                        try {
+                            response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                            if (response.status === 429) {
+                                const delay = Math.pow(2, retryCount) * 1000;
+                                retryCount++;
+                                await new Promise(res => setTimeout(res, delay));
+                                continue;
+                            }
+                            if (!response.ok) {
+                                throw new Error(`Image API call failed with status: ${response.status}`);
+                            }
+                            break;
+                        } catch (error) {
+                            retryCount++;
+                            if (retryCount >= 3) throw error;
+                            const delay = Math.pow(2, retryCount) * 1000;
+                            await new Promise(res => setTimeout(res, delay));
+                        }
+                    }
+
+                    const result = await response.json();
+                    if (result.predictions && result.predictions.length > 0 && result.predictions[0].bytesBase64Encoded) {
+                        const imageUrl = `data:image/png;base64,${result.predictions[0].bytesBase64Encoded}`;
+                        renderMessage('ai', imageUrl, true);
+                    } else {
+                        throw new Error("Invalid image API response format");
+                    }
+                } catch (error) {
+                    console.error("Image API Error:", error);
+                    showAlert("Failed to generate image. Please try again.");
+                } finally {
+                    toggleLoading(false);
+                }
+            });
+
+            voiceToggleButton.addEventListener('click', () => {
+                isVoiceMode = !isVoiceMode;
+                const icon = voiceToggleButton.querySelector('svg');
+                if (isVoiceMode) {
+                    icon.outerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-2 text-blue-500"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+                    showAlert("Voice mode enabled. Mindease will now speak its responses.");
+                } else {
+                    icon.outerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-volume-x text-gray-500"><path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="22" x2="16" y1="9" y2="15"/><line x1="16" x2="22" y1="9" y2="15"/></svg>`;
+                    showAlert("Voice mode disabled.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>
